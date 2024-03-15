@@ -1,0 +1,56 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+LRED='\033[1;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+
+run_linter () {
+  echo -e "${PURPLE}Linting the src folder ==> ${NC}${CYAN}Ext: .js, .ts, .scss${NC}"
+  pnpm exec lint-staged
+  if [[ $? -ne 0 ]]
+  then
+    exit 1
+  fi
+}
+
+check_branch () {
+  if test "$(git branch --show-current)" == "master" || test "$(git branch --show-current)" == "main" || test "$(git branch --show-current)" == "development"
+  then
+    printf "You are on ${LRED}$(git branch --show-current)${NC}.\n"
+    exit 1
+  fi
+}
+
+check_for_console_statements() {
+  # Check for console.log statements in staged .js and .ts files
+  local files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.\(js\|ts\)$')
+  local found=0
+
+  for file in $files; do
+    local lines_with_console=$(grep -n "console\." "$file")
+
+    if [ ! -z "$lines_with_console" ]; then
+      echo "${LRED}Error: Console statements found in $file:${NC}"
+      echo "$lines_with_console"
+      found=1
+    fi
+  done
+
+  if [ $found -eq 1 ]; then
+    echo "${LRED}Commit aborted due to console statements. Please remove them before committing.${NC}"
+    exit 1
+  else
+    echo "${GREEN}No console statements found. Proceeding with commit.${NC}"
+  fi
+}
+
+# Call the function
+run_linter
+check_branch
+check_for_console_statements
+
+printf "${GREEN}Proceeding with commit...${NC}\n"

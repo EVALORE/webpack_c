@@ -1,0 +1,33 @@
+@use 'typography' as *;
+@use 'variables' as *;
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+    min-width: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  background-color: $bg-body;
+}
+
+.app {
+  margin-inline: 20px;
+  padding-block: 20px 40px;
+}
+
+picture img {
+  display: block;
+  width: 100%;
+  max-width: inherit;
+  max-height: inherit;
+}
+
+.container {
+  max-width: 1360px;
+  margin-inline: auto;
+}
